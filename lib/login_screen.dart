@@ -22,27 +22,35 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // Google ile giriş fonksiyonu
   Future<User?> _signInWithGoogle() async {
-    try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        return null; // Kullanıcı giriş yapmadı
-      }
-
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-      final OAuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      UserCredential userCredential =
-          await _auth.signInWithCredential(credential);
-      return userCredential.user; // Kullanıcıyı döndürüyoruz
-    } catch (error) {
-      print("Google Sign-In Hatası: $error");
-      return null;
+  try {
+    final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+    if (googleUser == null) {
+      return null; // Kullanıcı giriş yapmadı
     }
+
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
+    final OAuthCredential credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+
+    // Firebase ile oturum açma
+    UserCredential userCredential =
+        await _auth.signInWithCredential(credential);
+
+    // Firebase'de kullanıcıyı kontrol etme
+    if (userCredential.user != null) {
+      print("Google giriş başarılı: ${userCredential.user?.email}");
+    }
+
+    return userCredential.user; // Kullanıcıyı döndürüyoruz
+  } catch (error) {
+    print("Google Sign-In Hatası: $error");
+    return null;
   }
+}
+
 
   // Firebase ile e-posta ve şifre ile giriş fonksiyonu
   Future<void> _signInWithEmailPassword() async {
@@ -105,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 SizedBox(height: screenHeight * 0.1),
                 ClipOval(
                   child: Image.asset(
-                    'lib/img/SwapShelf.png',
+                    'assets/img/SwapShelf.png',
                     width: screenWidth * 0.3,
                     height: screenWidth * 0.3,
                     fit: BoxFit.cover,
